@@ -3,15 +3,22 @@ package org.example.expert.domain.todo.repository;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
+import org.example.expert.domain.todo.dto.response.QTodoSearchResponse;
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
 import org.example.expert.domain.todo.entity.QTodo;
 import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.user.entity.QUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.example.expert.domain.comment.entity.QComment.comment;
+import static org.example.expert.domain.manager.entity.QManager.manager;
+import static org.example.expert.domain.todo.entity.QTodo.todo;
+import static org.example.expert.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
 public class TodoRepositoryImpl implements TodoRepositoryCustom {
@@ -22,8 +29,6 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     @Override
     public Page<Todo> searchTodosQuery(String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
 
-        QTodo todo = QTodo.todo;
-        QUser user = QUser.user;
 
         List<Todo> todos = queryFactory
                 .selectFrom(todo)
@@ -64,4 +69,65 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     private BooleanExpression modifiedAtLoe(LocalDateTime endDate, QTodo todo){
         return endDate != null ? todo.modifiedAt.loe(endDate) : null;
     }
+
+    @Override
+    public Page<TodoSearchResponse> searchTodos(TodoSearchRequest request, Pageable pageable) {
+
+        List<TodoSearchResponse> responses = queryFactory
+                .select(new QTodoSearchResponse(
+                        todo.title,
+                        manager.id.countDistinct(),
+                        comment.id.countDistinct()
+                ))
+                .from(todo)
+                .leftJoin(manager).on(manager.todo.eq(todo))
+                .leftJoin(comment).on(comment.todo.eq(todo))
+                .leftJoin(manager.user,user)
+                .where(
+                        titleContains(request.getTitle()),
+                        createdAtGoe(request.getStartTime()),
+                        createdAtLoe(request.getEndTime()),
+                        nicknameContains(request.getNickname())
+                )
+                .groupBy(todo.id, todo.title)
+                .orderBy(todo.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(todo.id.countDistinct())
+                .from(todo)
+                .leftJoin(manager).on(manager.todo.eq(todo))
+                .leftJoin(manager.user, user)
+                .where(
+                        titleContains(request.getTitle()),
+                        createdAtGoe(request.getStartTime()),
+                        createdAtLoe(request.getEndTime()),
+                        nicknameContains(request.getNickname())
+                )
+                .fetchOne();
+
+        return new PageImpl<>(responses, pageable, total ==  null ? 0 : total);
+    }
+
+
+
+    private BooleanExpression titleContains(String title) {
+        return title == null || title.isBlank() ? null : todo.title.containsIgnoreCase(title);
+    }
+
+    private BooleanExpression createdAtGoe(LocalDateTime startTime) {
+        return startTime == null ? null : todo.createdAt.goe(startTime);
+    }
+
+    private BooleanExpression createdAtLoe(LocalDateTime endTime) {
+        return endTime == null ? null : todo.createdAt.loe(endTime);
+    }
+
+    private BooleanExpression nicknameContains(String nickname) {
+        return nickname == null || nickname.isBlank() ? null : user.nickname.containsIgnoreCase(nickname);
+    }
+
+
 }
