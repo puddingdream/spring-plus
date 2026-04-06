@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.expert.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
+import org.example.expert.domain.log.LogService;
+import org.example.expert.domain.log.LogStatus;
 import org.example.expert.domain.todo.dto.request.TodoGetRequest;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
@@ -27,6 +29,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final WeatherClient weatherClient;
+    private final LogService logService;
 
     @Transactional
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
@@ -34,27 +37,45 @@ public class TodoService {
 
         String weather = weatherClient.getTodayWeather();
 
-        Todo newTodo = new Todo(
-                todoSaveRequest.getTitle(),
-                todoSaveRequest.getContents(),
-                weather,
-                user
-        );
-        Todo savedTodo = todoRepository.save(newTodo);
-
-        return new TodoSaveResponse(
-                savedTodo.getId(),
-                savedTodo.getTitle(),
-                savedTodo.getContents(),
-                weather,
-                new UserResponse(user.getId(), user.getEmail())
-        );
+        Todo savedTodo = null;
+        try {
+            Todo newTodo = new Todo(
+                    todoSaveRequest.getTitle(),
+                    todoSaveRequest.getContents(),
+                    weather,
+                    user
+            );
+            savedTodo = todoRepository.save(newTodo);
+            logService.saveManagerRegisterLog(
+                    authUser.getId(),
+                    authUser.getId(),
+                    savedTodo.getId(),
+                    LogStatus.SUCCESS,
+                    "자동 담당자 등록 성공"
+            );
+            return new TodoSaveResponse(
+                    savedTodo.getId(),
+                    savedTodo.getTitle(),
+                    savedTodo.getContents(),
+                    weather,
+                    new UserResponse(user.getId(), user.getEmail())
+            );
+        } catch (RuntimeException e) {
+            logService.saveManagerRegisterLog(
+                    authUser.getId(),
+                    authUser.getId(),
+                    null,
+                    LogStatus.FAIL,
+                    e.getMessage()
+            );
+            throw e;
+        }
     }
 
     public Page<TodoResponse> getTodos(int page, int size, TodoGetRequest request) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Todo> todos = todoRepository.searchTodosQuery(request.weather(),request.startDate(), request.endDate(),pageable);
+        Page<Todo> todos = todoRepository.searchTodosQuery(request.weather(), request.startDate(), request.endDate(), pageable);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
