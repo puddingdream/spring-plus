@@ -1,32 +1,22 @@
-
-#과제 실행 편의를 위해 설정값을 application.yml에 직접 작성
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/spring_plus?rewriteBatchedStatements=true&cachePrepStmts=true&useServerPrepStmts=false
-    username: root
-    password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
 
-jwt:
-  secret:
-    key: ejtJLsiErBrM2eWXNZYhMg9FwJbZlRxWjlmWSBYLtEb
-
 cloud:
   aws:
     region:
-      static: ap-northeast-2
+      static: ${AWS_REGION:ap-northeast-2}
     stack:
       auto: false
     s3:
