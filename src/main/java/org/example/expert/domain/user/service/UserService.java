@@ -3,12 +3,15 @@ package org.example.expert.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
+import org.example.expert.domain.user.dto.response.UserProfileImageUploadResponse;
+import org.example.expert.domain.user.dto.response.UserProfileImageUrlResponse;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -17,10 +20,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final S3Service s3Service;
 
     public UserResponse getUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidRequestException("User not found"));
         return new UserResponse(user.getId(), user.getEmail());
+    }
+
+    public UserResponse getUserByNickname(String nickname) {
+        User user = userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        return new UserResponse(user.getId(), user.getEmail(), user.getNickname());
     }
 
     @Transactional
@@ -39,6 +50,30 @@ public class UserService {
         }
 
         user.changePassword(passwordEncoder.encode(userChangePasswordRequest.getNewPassword()));
+    }
+
+    @Transactional
+    public UserProfileImageUploadResponse uploadProfileImage(long userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        String key = s3Service.uploadProfileImage(file);
+        user.updateProfileImageKey(key);
+
+        return new UserProfileImageUploadResponse(key);
+    }
+
+    public UserProfileImageUrlResponse getProfileImageDownloadUrl(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        if (user.getProfileImageKey() == null || user.getProfileImageKey().isBlank()) {
+            throw new InvalidRequestException("Profile image not found");
+        }
+
+        return new UserProfileImageUrlResponse(
+                s3Service.getDownloadUrl(user.getProfileImageKey()).toString()
+        );
     }
 
     private static void validateNewPassword(UserChangePasswordRequest userChangePasswordRequest) {

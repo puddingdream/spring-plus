@@ -10,7 +10,9 @@ import org.example.expert.domain.user.enums.UserRole;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "users")
+@Table(
+        name = "users"
+)
 public class User extends Timestamped {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +21,7 @@ public class User extends Timestamped {
     private String email;
     private String password;
     private String nickname;
+    private String profileImageKey;
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
@@ -46,5 +49,9 @@ public class User extends Timestamped {
 
     public void updateRole(UserRole userRole) {
         this.userRole = userRole;
+    }
+
+    public void updateProfileImageKey(String profileImageKey) {
+        this.profileImageKey = profileImageKey;
     }
 }
