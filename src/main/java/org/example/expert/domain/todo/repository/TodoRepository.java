@@ -12,6 +12,21 @@ import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositoryCustom {
 
+    @Query("""
+        SELECT t
+        FROM Todo t
+        LEFT JOIN FETCH t.user u
+        where (:weather is null or t.weather = :weather)
+        and (:startDate is null or t.modifiedAt >= :startDate)
+        and (:endDate is null or t.modifiedAt <= :endDate)
+        ORDER BY t.modifiedAt DESC
+        """)
+    Page<Todo> searchTodosJPQL(
+            @Param("weather") String weather,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
 
     @Query("SELECT t FROM Todo t " +
             "LEFT JOIN t.user " +
