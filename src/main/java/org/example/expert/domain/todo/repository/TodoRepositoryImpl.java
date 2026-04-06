@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.example.expert.domain.comment.entity.QComment.comment;
 import static org.example.expert.domain.manager.entity.QManager.manager;
@@ -32,11 +33,11 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
 
         List<Todo> todos = queryFactory
                 .selectFrom(todo)
-                .leftJoin(todo.user,user).fetchJoin()
+                .leftJoin(todo.user, user).fetchJoin()
                 .where(
-                        weatherEq(weather,todo),
-                        modifiedAtGoe(startDate,todo),
-                        modifiedAtLoe(endDate,todo))
+                        weatherEq(weather, todo),
+                        modifiedAtGoe(startDate, todo),
+                        modifiedAtLoe(endDate, todo))
                 .orderBy(todo.modifiedAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -56,17 +57,17 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
 
 
     private BooleanExpression weatherEq(String weather, QTodo todo) {
-       if(weather == null || weather.isBlank()){
-           return null;
-       }
+        if (weather == null || weather.isBlank()) {
+            return null;
+        }
         return todo.weather.eq(weather);
     }
 
-    private BooleanExpression modifiedAtGoe(LocalDateTime startDate, QTodo todo){
+    private BooleanExpression modifiedAtGoe(LocalDateTime startDate, QTodo todo) {
         return startDate != null ? todo.modifiedAt.goe(startDate) : null;
     }
 
-    private BooleanExpression modifiedAtLoe(LocalDateTime endDate, QTodo todo){
+    private BooleanExpression modifiedAtLoe(LocalDateTime endDate, QTodo todo) {
         return endDate != null ? todo.modifiedAt.loe(endDate) : null;
     }
 
@@ -82,7 +83,7 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
                 .from(todo)
                 .leftJoin(manager).on(manager.todo.eq(todo))
                 .leftJoin(comment).on(comment.todo.eq(todo))
-                .leftJoin(manager.user,user)
+                .leftJoin(manager.user, user)
                 .where(
                         titleContains(request.getTitle()),
                         createdAtGoe(request.getStartTime()),
@@ -108,9 +109,8 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
                 )
                 .fetchOne();
 
-        return new PageImpl<>(responses, pageable, total ==  null ? 0 : total);
+        return new PageImpl<>(responses, pageable, total == null ? 0 : total);
     }
-
 
 
     private BooleanExpression titleContains(String title) {
@@ -127,6 +127,18 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
 
     private BooleanExpression nicknameContains(String nickname) {
         return nickname == null || nickname.isBlank() ? null : user.nickname.containsIgnoreCase(nickname);
+    }
+
+    @Override
+    public Optional<Todo> getTodo(Long todoId) {
+
+        Todo result = queryFactory
+                .selectFrom(todo)
+                .leftJoin(todo.user, user).fetchJoin()
+                .where(todo.id.eq(todoId))
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
 
