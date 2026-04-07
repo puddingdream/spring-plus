@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositoryCustom {
 
+    // 과제 3번: weather, startDate, endDate를 모두 optional 조건으로 처리
     @Query("""
         SELECT t
         FROM Todo t
@@ -28,6 +29,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositor
             Pageable pageable
     );
 
+    // 과제 8번 이전 단계에서 사용하던 사용자 조인 조회 메서드
     @Query("SELECT t FROM Todo t " +
             "LEFT JOIN t.user " +
             "WHERE t.id = :todoId")

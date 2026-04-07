@@ -30,6 +30,7 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
+        // yml에 저장된 Base64 문자열을 실제 서명 키 객체로 변환한다.
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
     }
@@ -39,9 +40,11 @@ public class JwtUtil {
 
         return BEARER_PREFIX +
                 Jwts.builder()
+                        // subject에는 사용자 식별자, claim에는 부가 정보를 저장한다.
                         .setSubject(String.valueOf(userId))
                         .claim("email", email)
                         .claim("userRole", userRole)
+                        // 과제 2번: 컨트롤러/서비스에서 nickname을 다시 DB 조회하지 않고 쓸 수 있게 토큰에 포함
                         .claim("nickname", nickname)
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME))
                         .setIssuedAt(date) // 발급일
@@ -50,6 +53,7 @@ public class JwtUtil {
     }
 
     public String substringToken(String tokenValue) {
+        // Authorization 헤더의 "Bearer " 접두사를 제거해 순수 JWT 문자열만 꺼낸다.
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(7);
         }
@@ -57,6 +61,7 @@ public class JwtUtil {
     }
 
     public Claims extractClaims(String token) {
+        // 서명 검증이 끝난 뒤 payload(claims)를 꺼낸다.
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

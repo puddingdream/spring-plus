@@ -18,16 +18,19 @@ public class UserController {
 
     private final UserService userService;
 
+    // 기본 유저 단건 조회
     @GetMapping("/users/{userId}")
     public ResponseEntity<UserResponse> getUser(@PathVariable long userId) {
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
+    // 과제 13번: nickname 정확 일치 조건으로 사용자를 조회하는 API
     @GetMapping("/users/search")
     public ResponseEntity<UserResponse> getUserByNickname(@RequestParam String nickname) {
         return ResponseEntity.ok(userService.getUserByNickname(nickname));
     }
 
+    // 인증된 사용자의 비밀번호 변경
     @PutMapping("/users")
     public void changePassword(
             @AuthenticationPrincipal AuthUser authUser,
@@ -36,6 +39,7 @@ public class UserController {
         userService.changePassword(authUser.getId(), userChangePasswordRequest);
     }
 
+    // 과제 12번: S3에 프로필 이미지를 업로드하고, S3 object key를 사용자 엔티티에 저장한다.
     @PostMapping("/users/profile-image")
     public ResponseEntity<UserProfileImageUploadResponse> uploadProfileImage(
             @AuthenticationPrincipal AuthUser authUser,
@@ -44,6 +48,7 @@ public class UserController {
         return ResponseEntity.ok(userService.uploadProfileImage(authUser.getId(), file));
     }
 
+    // 저장된 S3 object key를 기준으로 presigned download URL을 발급한다.
     @GetMapping("/users/profile-image")
     public ResponseEntity<UserProfileImageUrlResponse> getProfileImageDownloadUrl(
             @AuthenticationPrincipal AuthUser authUser

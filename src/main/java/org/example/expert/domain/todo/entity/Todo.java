@@ -30,6 +30,7 @@ public class Todo extends Timestamped {
     @OneToMany(mappedBy = "todo", cascade = CascadeType.REMOVE)
     private List<Comment> comments = new ArrayList<>();
 
+    // 과제 6번: Todo 저장 시 담당자(작성자)도 함께 저장되도록 cascade persist 사용
     @OneToMany(mappedBy = "todo" ,cascade = CascadeType.PERSIST)
     private List<Manager> managers = new ArrayList<>();
 
@@ -38,6 +39,7 @@ public class Todo extends Timestamped {
         this.contents = contents;
         this.weather = weather;
         this.user = user;
+        // 일정을 만든 사람을 첫 담당자로 자동 등록
         this.managers.add(new Manager(user, this));
     }
 }

@@ -22,6 +22,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    // 과제 2번: JWT에 nickname까지 담아 발급하는 책임
     private final JwtUtil jwtUtil;
 
     @Transactional
@@ -43,6 +44,8 @@ public class AuthService {
         );
         User savedUser = userRepository.save(newUser);
 
+        // 회원가입 직후 바로 사용할 수 있도록 JWT를 생성해 응답한다.
+        // 이때 subject 외에 email, role, nickname도 함께 담는다.
         String bearerToken = jwtUtil.createToken(savedUser.getId(), savedUser.getEmail(), userRole,savedUser.getNickname());
 
         return new SignupResponse(bearerToken);
@@ -57,6 +60,7 @@ public class AuthService {
             throw new AuthException("잘못된 비밀번호입니다.");
         }
 
+        // 과제 2번 변경사항: 로그인 토큰에도 nickname claim이 포함된다.
         String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getUserRole(), user.getNickname());
 
         return new SigninResponse(bearerToken);

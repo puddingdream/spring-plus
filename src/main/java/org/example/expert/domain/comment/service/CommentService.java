@@ -48,6 +48,8 @@ public class CommentService {
     }
 
     public List<CommentResponse> getComments(long todoId) {
+        // 과제 7번: 댓글 목록 조회 시 comment -> user N+1이 발생하지 않도록
+        // user를 함께 조회하는 repository 메서드를 사용한다.
         List<Comment> commentList = commentRepository.findByTodoIdWithUser(todoId);
 
         List<CommentResponse> dtoList = new ArrayList<>();

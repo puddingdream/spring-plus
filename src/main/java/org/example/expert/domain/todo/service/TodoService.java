@@ -29,6 +29,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final WeatherClient weatherClient;
+    // 과제 11번: 매니저 등록 로그를 별도 트랜잭션으로 남기기 위해 사용
     private final LogService logService;
 
     @Transactional
@@ -39,6 +40,7 @@ public class TodoService {
 
         Todo savedTodo = null;
         try {
+            // 과제 6번: Todo 생성자 안에서 작성자를 자동 담당자로 등록하도록 cascade persist와 연결
             Todo newTodo = new Todo(
                     todoSaveRequest.getTitle(),
                     todoSaveRequest.getContents(),
@@ -46,6 +48,7 @@ public class TodoService {
                     user
             );
             savedTodo = todoRepository.save(newTodo);
+            // 성공 로그는 REQUIRES_NEW 트랜잭션으로 저장되어 메인 로직과 분리된다.
             logService.saveManagerRegisterLog(
                     authUser.getId(),
                     authUser.getId(),
@@ -61,6 +64,7 @@ public class TodoService {
                     new UserResponse(user.getId(), user.getEmail())
             );
         } catch (RuntimeException e) {
+            // 메인 트랜잭션이 실패해도 실패 로그는 따로 남긴다.
             logService.saveManagerRegisterLog(
                     authUser.getId(),
                     authUser.getId(),
@@ -75,6 +79,7 @@ public class TodoService {
     public Page<TodoResponse> getTodos(int page, int size, TodoGetRequest request) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
+        // 과제 3번: JPQL 기반 optional 검색 조건 사용
         Page<Todo> todos = todoRepository.searchTodosJPQL(request.weather(), request.startDate(), request.endDate(), pageable);
 
         return todos.map(todo -> new TodoResponse(
@@ -90,6 +95,7 @@ public class TodoService {
 
 
     public TodoResponse getTodo(long todoId) {
+        // 과제 8번: QueryDSL 구현체의 fetchJoin 조회 사용
         Todo todo = todoRepository.getTodo(todoId)
                 .orElseThrow(() -> new InvalidRequestException("Todo not found"));
 
@@ -107,6 +113,7 @@ public class TodoService {
     }
 
     public Page<TodoSearchResponse> searchTodos(TodoSearchRequest request) {
+        // 과제 10번: QueryDSL 기반 검색 API
         return todoRepository.searchTodos(request, request.toPageable());
     }
 }

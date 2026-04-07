@@ -19,6 +19,8 @@ public class LogService {
             LogStatus status,
             String message
     ) {
+        // 과제 11번 핵심: REQUIRES_NEW로 별도 트랜잭션을 열어
+        // 바깥 비즈니스 로직이 실패/롤백되어도 로그는 독립적으로 남긴다.
         Log log = new Log(
                 "MANAGER_REGISTER",
                 requestUserId,

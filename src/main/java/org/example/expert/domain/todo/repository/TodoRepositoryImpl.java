@@ -30,9 +30,11 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     @Override
     public Page<Todo> searchTodosQuery(String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
 
-
+        // QueryDSL 버전 검색 메서드. 과제 3번 최종 정리는 JPQL로 했지만,
+        // 동적 조건 처리 예시로 남겨둔 구현이다.
         List<Todo> todos = queryFactory
                 .selectFrom(todo)
+                // 연관 user를 같이 가져와서 N+1을 피한다.
                 .leftJoin(todo.user, user).fetchJoin()
                 .where(
                         weatherEq(weather, todo),
@@ -74,6 +76,7 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     @Override
     public Page<TodoSearchResponse> searchTodos(TodoSearchRequest request, Pageable pageable) {
 
+        // 과제 10번: 제목, 기간, 담당자 nickname 조건으로 통계성 검색 결과를 만든다.
         List<TodoSearchResponse> responses = queryFactory
                 .select(new QTodoSearchResponse(
                         todo.title,
@@ -132,6 +135,7 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     @Override
     public Optional<Todo> getTodo(Long todoId) {
 
+        // 과제 8번: Todo 단건 조회를 QueryDSL + fetchJoin으로 전환
         Todo result = queryFactory
                 .selectFrom(todo)
                 .leftJoin(todo.user, user).fetchJoin()

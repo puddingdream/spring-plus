@@ -20,6 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    // 실제 S3 연동 책임은 별도 서비스에 위임해서, UserService는 "유저 정보와 연결"에 집중한다.
     private final S3Service s3Service;
 
     public UserResponse getUser(long userId) {
@@ -27,6 +28,7 @@ public class UserService {
         return new UserResponse(user.getId(), user.getEmail());
     }
 
+    // 과제 13번: nickname exact match 검색
     public UserResponse getUserByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname)
                 .orElseThrow(() -> new InvalidRequestException("User not found"));
@@ -57,6 +59,8 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new InvalidRequestException("User not found"));
 
+        // 파일 자체는 S3에 저장하고, DB에는 object key만 저장한다.
+        // 이렇게 하면 DB에는 큰 바이너리를 넣지 않고도 파일 위치를 추적할 수 있다.
         String key = s3Service.uploadProfileImage(file);
         user.updateProfileImageKey(key);
 
@@ -71,12 +75,15 @@ public class UserService {
             throw new InvalidRequestException("Profile image not found");
         }
 
+        // 클라이언트가 S3에서 직접 다운로드할 수 있도록 presigned URL을 내려준다.
+        // 서버가 파일 바이트를 중계하지 않아도 되어 트래픽 부담을 줄일 수 있다.
         return new UserProfileImageUrlResponse(
                 s3Service.getDownloadUrl(user.getProfileImageKey()).toString()
         );
     }
 
     private static void validateNewPassword(UserChangePasswordRequest userChangePasswordRequest) {
+        // 단순 길이 체크만 하지 않고, 숫자/대문자 포함 조건도 같이 검증한다.
         if (userChangePasswordRequest.getNewPassword().length() < 8 ||
                 !userChangePasswordRequest.getNewPassword().matches(".*\\d.*") ||
                 !userChangePasswordRequest.getNewPassword().matches(".*[A-Z].*")) {

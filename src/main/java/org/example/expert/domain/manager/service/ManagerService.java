@@ -54,6 +54,7 @@ public class ManagerService {
             Manager newManagerUser = new Manager(managerUser, todo);
             Manager savedManagerUser = managerRepository.save(newManagerUser);
 
+            // 과제 11번: 성공 로그를 별도 트랜잭션으로 저장
             logService.saveManagerRegisterLog(
                     authUser.getId(),
                     managerSaveRequest.getManagerUserId(),
@@ -67,6 +68,7 @@ public class ManagerService {
                     new UserResponse(managerUser.getId(), managerUser.getEmail())
             );
         } catch (RuntimeException e) {
+            // 담당자 등록 실패여도 실패 로그는 남도록 처리
             logService.saveManagerRegisterLog(
                     authUser.getId(),
                     managerSaveRequest.getManagerUserId(),
