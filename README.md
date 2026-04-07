@@ -172,7 +172,8 @@ Authorization: Bearer {token}
 - Health Check API 추가
 
 Health Check URL:
-
+<img width="538" height="223" alt="Image" src="https://github.com/user-attachments/assets/50ee2911-65c9-4082-a6a2-62332fa4e92d" />
+<img width="981" height="709" alt="Image" src="https://github.com/user-attachments/assets/405b7018-404e-40a2-bc60-a17fbc58e4b2" />
 ```text
 http://3.39.128.40:8080/health
 ```
@@ -193,7 +194,9 @@ http://3.39.128.40:8080/health
 - EC2에서 실행된 애플리케이션이 RDS에 회원 데이터를 저장하는 것 확인
 
 운영 설정은 Parameter Store의 `SPRING_APPLICATION_JSON` 하나로 주입했습니다.
-
+<img width="1008" height="744" alt="Image" src="https://github.com/user-attachments/assets/c945bfc0-15c0-45b5-a734-e53d46637865" />
+<img width="970" height="743" alt="Image" src="https://github.com/user-attachments/assets/94aecf76-a462-4a72-8d7e-b304e7eef3bd" />
+<img width="923" height="604" alt="Image" src="https://github.com/user-attachments/assets/9c318125-16c0-4d44-abf4-95c663af7b69" />
 예시:
 
 ```json
@@ -240,6 +243,9 @@ S3 관련 구현 파일:
 구현 API:
 
 #### 업로드
+<img width="979" height="762" alt="Image" src="https://github.com/user-attachments/assets/4570723a-091a-40e7-aedc-deb97f712704" />
+<img width="966" height="980" alt="image" src="https://github.com/user-attachments/assets/ed936178-e0da-41a6-9e5a-cf31517d1c8a" />
+<img width="978" height="1108" alt="image" src="https://github.com/user-attachments/assets/01773d13-ab31-483b-9d1e-9f2235179696" />
 
 ```http
 POST /users/profile-image
@@ -269,6 +275,21 @@ Authorization: Bearer {token}
   "url": "https://..."
 }
 ```
+
+#### 연결 상태 사진
+<img width="1280" height="1008" alt="image" src="https://github.com/user-attachments/assets/2b8eca74-a1fe-4766-b3ed-1685c5985c7f" />
+<img width="1280" height="535" alt="image" src="https://github.com/user-attachments/assets/7d62d8a1-ca36-4935-bf1d-9954a702af16" />
+<img width="1280" height="963" alt="image" src="https://github.com/user-attachments/assets/75a4f065-26a1-4155-af5c-19d2ea5f7931" />
+<img width="1280" height="532" alt="image" src="https://github.com/user-attachments/assets/014abff5-67fd-40d2-903e-cc44c4b020fd" />
+<img width="1280" height="538" alt="image" src="https://github.com/user-attachments/assets/cbfeb75a-9864-48d1-a88a-a1cffd3f5859" />
+<img width="1280" height="418" alt="image" src="https://github.com/user-attachments/assets/fba0ba75-e2db-4fc3-9ece-f69cb891a58d" />
+<img width="1280" height="451" alt="image" src="https://github.com/user-attachments/assets/9c33dbee-0342-4979-86e0-ab2107f21cbb" />
+<img width="1280" height="578" alt="image" src="https://github.com/user-attachments/assets/aaec28a1-338c-4122-ba74-a9a9a53354b2" />
+<img width="1280" height="544" alt="image" src="https://github.com/user-attachments/assets/e06717e1-8d0c-4cbc-9aeb-7355c7c9bc21" />
+<img width="1280" height="777" alt="image" src="https://github.com/user-attachments/assets/391b3f5a-ca4e-4943-aa46-6ebeb49bd548" />
+
+
+
 
 ## 13. 대용량 데이터 처리
 
